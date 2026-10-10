@@ -19,8 +19,6 @@ builder:
   remote: ssh://__VPS_SSH_USER__@__VPS_SSH_HOST__
   args:
     GIT_REVISION: <%= `git rev-parse HEAD`.strip %>
-  args:
-    GIT_REVISION: <%= `git rev-parse HEAD`.strip %>
 
 proxy:
   ssl: true

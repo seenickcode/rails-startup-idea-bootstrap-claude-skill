@@ -172,9 +172,13 @@ Wire-up edits in the generated app:
 
 Copy the test suite from `SKILL_DIR/templates/test/` → `test/` (replaces
 test_helper.rb; covers auth flow, newsletter incl. subscriber confirmation,
-Stripe webhooks, homepage). Run `bin/rails test` — all must pass.
+Stripe webhooks, homepage, plus a real-browser smoke test in test/system/). Run `bin/rails test` — all must pass.
 Rails' generated `.github/workflows/ci.yml` runs rubocop + brakeman + tests
-on every push: run `bin/rubocop -a` before committing, and keep the Gemfile
+(+ a `system-test` job). KEEP the system-test job: the template ships
+`test/application_system_test_case.rb` + `test/system/smoke_test.rb` (headless
+Chrome; fails on console errors, broken assets/JS). Chrome isn't installed
+locally, so system tests run in CI only — verify via the CI gate below.
+CI runs on every push: run `bin/rubocop -a` before committing, and keep the Gemfile
 on a Rails version brakeman considers maintained (its EOL check fails CI).
 
 Local verification before deploying (fix anything that fails):
@@ -247,11 +251,25 @@ queue → Postmark → Sent), not just an app-side ack:
    until the message status is literally `Sent` (EMAIL_OK). EMAIL_FAIL means
    the queue worker or Postmark is broken even though the site looks healthy.
 
-Final report to the user: URL, repo URL, Postmark verification status,
+CI gate (required before reporting live): after the last push, run
+`gh run watch $(gh run list -b main -w CI -L1 --json databaseId -q '.[0].databaseId') --exit-status`.
+If it fails, `gh run view <id> --log-failed`, fix, push, and re-watch. Never
+report the project as live while CI on the default branch is red; if you
+can't fix it, say so explicitly in the report. Dependabot PRs opened before a
+CI fix will stay red until rebased; mention them rather than counting them.
+
+Final report to the user (include CI status and test count): URL, repo URL, Postmark verification status,
 sender.net group id, Stripe webhook id, backup location
 (`s3://<domain-bucket>/<domain>/production`), letter_opener at
 `http://localhost:3000/letter_opener` in dev, and how to restore:
 `litestream restore -config config/litestream.yml /rails/storage/production.sqlite3`.
+
+## Environment notes
+
+- Ruby may not be on PATH in Claude's shell: `export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH" RBENV_VERSION=3.4.2`.
+- `--skip-kamal` means no `bin/kamal`: use `bundle exec kamal`.
+- `bootstrap-vps.sh` fails on `sudo systemctl` without passwordless sudo; if Docker and kamal-proxy already run on the VPS, that's fine to skip.
+- Domains at another registrar (e.g. Hover): create the zone, set the registrar's nameservers to Cloudflare's, and delete imported parking A records before adding ours.
 
 ## Failure handling
 
