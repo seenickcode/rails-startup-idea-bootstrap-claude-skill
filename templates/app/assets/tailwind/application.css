@@ -1,0 +1,8 @@
+/* Tailwind utilities only — preflight (the base reset) is deliberately NOT
+   imported, so the browser's own defaults stand: Times New Roman, native
+   buttons, blue underlined links. Utility classes still work everywhere the
+   moment you add them. To opt back into the reset later, replace this file
+   with just: @import "tailwindcss"; */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);

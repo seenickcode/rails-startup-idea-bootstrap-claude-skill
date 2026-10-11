@@ -1,0 +1,17 @@
+# Litestream — continuous SQLite replication to Cloudflare R2.
+# R2 credentials come from LITESTREAM_ACCESS_KEY_ID / LITESTREAM_SECRET_ACCESS_KEY
+# env vars (set on the accessory by Kamal) so this file is committable.
+# Never add an R2 lifecycle rule to the bucket: restores need every WAL
+# segment after a snapshot, and breakage only surfaces at restore time.
+# production_queue.sqlite3 is deliberately not replicated (Solid Queue churn).
+dbs:
+  - path: /rails/storage/production.sqlite3
+    replicas:
+      - type: s3
+        bucket: __R2_BUCKET__
+        path: __DOMAIN__/production
+        endpoint: https://__R2_ACCOUNT_ID__.r2.cloudflarestorage.com
+        region: auto
+        sync-interval: 10s
+        snapshot-interval: 24h
+        retention: 720h

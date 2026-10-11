@@ -1,0 +1,18 @@
+<h1>hello</h1>
+
+<% flash.each do |type, msg| %>
+  <p><%= msg %></p>
+<% end %>
+
+<% if signed_in? %>
+  <p>Signed in as <%= current_user_email %>.</p>
+<% end %>
+
+<%= form_with url: newsletter_signup_path, method: :post do |f| %>
+  <%= f.email_field :email, placeholder: "you@example.com", required: true %>
+  <%= f.submit "Subscribe to the newsletter" %>
+<% end %>
+
+<% if ENV["STRIPE_PRICE_ID"].present? %>
+  <%= button_to "Buy", checkout_path %>
+<% end %>

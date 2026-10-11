@@ -1,0 +1,3 @@
+<p>New signup: <strong><%= @user.email %></strong></p>
+<p>Newsletter: <strong><%= @user.newsletter? ? "yes" : "no" %></strong></p>
+<% if @newsletter_only %><p>(Newsletter-only signup — no account session created.)</p><% end %>

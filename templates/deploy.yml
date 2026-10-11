@@ -1,0 +1,76 @@
+# Kamal config template — placeholders substituted by /new-site.
+# __APP__ app name (domain, dots -> underscores)  __DOMAIN__ apex domain
+# __VPS_SSH_HOST__ tailnet address for SSH (DNS uses the public IP, not this)
+# __GH_USER__ GitHub user  __ARCH__ amd64|arm64 (uname -m on VPS)
+service: __APP__
+image: __GH_USER__/__APP__
+
+servers:
+  web:
+    - __VPS_SSH_HOST__
+
+ssh:
+  user: __VPS_SSH_USER__
+
+# Build natively on the VPS — no emulation, and images never cross the
+# public internet:
+builder:
+  arch: __ARCH__
+  remote: ssh://__VPS_SSH_USER__@__VPS_SSH_HOST__
+  args:
+    GIT_REVISION: <%= `git rev-parse HEAD`.strip %>
+  args:
+    GIT_REVISION: <%= `git rev-parse HEAD`.strip %>
+
+proxy:
+  ssl: true
+  hosts:
+    - __DOMAIN__
+    - www.__DOMAIN__
+  healthcheck:
+    path: /up
+    interval: 3
+    timeout: 30
+
+registry:
+  server: ghcr.io
+  username: __GH_USER__
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - POSTMARK_API_TOKEN
+    - SENDER_API_TOKEN
+    - SENDER_GROUP_ID
+    - STRIPE_SECRET_KEY
+    - STRIPE_WEBHOOK_SECRET
+    - STRIPE_PRICE_ID
+    - POSTHOG_API_KEY
+    - SENTRY_DSN
+  clear:
+    APP_HOST: __DOMAIN__
+    POSTMARK_FROM_EMAIL: __POSTMARK_FROM_EMAIL__
+    ADMIN_EMAIL: __ADMIN_EMAIL__
+    POSTHOG_HOST: __POSTHOG_HOST__
+    SOLID_QUEUE_IN_PUMA: "true"
+
+volumes:
+  - "__APP___storage:/rails/storage"
+
+# NOTE: `kamal deploy` ignores accessories — run `kamal accessory boot litestream`
+# once after first deploy (the skill does this).
+accessories:
+  litestream:
+    image: litestream/litestream:0.3.13
+    host: __VPS_SSH_HOST__
+    volumes:
+      - "__APP___storage:/rails/storage"   # must be rw: litestream keeps a shadow WAL
+    files:
+      - config/litestream.yml:/etc/litestream.yml
+    cmd: replicate -config /etc/litestream.yml
+    env:
+      secret:
+        - LITESTREAM_ACCESS_KEY_ID
+        - LITESTREAM_SECRET_ACCESS_KEY

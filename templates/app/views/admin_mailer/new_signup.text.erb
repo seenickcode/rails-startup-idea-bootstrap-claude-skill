@@ -1,0 +1,3 @@
+New signup: <%= @user.email %>
+Newsletter: <%= @user.newsletter? ? "yes" : "no" %>
+<% if @newsletter_only %>(Newsletter-only signup — no account session created.)<% end %>
