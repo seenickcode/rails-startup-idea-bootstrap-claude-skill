@@ -46,6 +46,12 @@ See [`SKILL.md`](SKILL.md) for the full step-by-step instructions Claude follows
 - A VPS (built for Hetzner, any Linux host with SSH + sudo works) reachable over
   [Tailscale](https://tailscale.com). The skill assumes SSH is tailnet-only and the
   public IP serves just 80/443.
+- **Run the skill somewhere other than the hosting VPS.** The machine running
+  Claude Code holds every credential (Cloudflare, GitHub, Stripe live key,
+  Postmark, R2). Keep it separate from the internet-facing server, such as your laptop
+  or a dedicated build box on the tailnet, so a compromised site can't reach
+  those keys. The hosting VPS only ever receives the per-site secrets Kamal
+  pushes to it.
 - Accounts: Cloudflare, GitHub, Postmark, sender.net, Stripe, PostHog. Sentry is optional.
 
 **Local tools**
