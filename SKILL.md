@@ -131,6 +131,8 @@ Copy template files from `SKILL_DIR/templates/`:
   `ssh $VPS_SSH_USER@$VPS_SSH_HOST uname -m`: x86_64→amd64, aarch64→arm64),
   `__R2_BUCKET__`, `__R2_ACCOUNT_ID__`, `__POSTMARK_FROM_EMAIL__`
   (hello@<domain>), `__ADMIN_EMAIL__`, `__POSTHOG_HOST__`.
+- `deploy.sh` → project root, keep it executable. Later deploys are
+  `./deploy.sh` on the VPS checkout (rbenv PATH, `git pull`, `kamal deploy`).
 
 Wire-up edits in the generated app:
 - development.rb: `delivery_method = :letter_opener_web`,
@@ -220,7 +222,7 @@ LITESTREAM_SECRET_ACCESS_KEY=$R2_SECRET_ACCESS_KEY
    ports 80/443). Expect `BOOTSTRAP_OK`.
 2. `docker login ghcr.io -u $GITHUB_USER -p $GITHUB_TOKEN` (and the same on
    the VPS if pulls fail).
-3. `kamal setup` (first time; later deploys are `kamal deploy`). If the shared
+3. `kamal setup` (first time; later deploys are `./deploy.sh`). If the shared
    VPS already runs kamal-proxy for other apps, setup coexists fine — the
    proxy routes by host.
 4. `kamal accessory boot litestream` — `kamal deploy` ignores accessories, so
